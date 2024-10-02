@@ -6,7 +6,7 @@ form {
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 10px;
-    max-width: 400px;
+    max-width:800px;
     margin: 0 auto;
 }
 
@@ -62,22 +62,23 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
 }
 
-body {
-    font-family: Arial, sans-serif;
+/* Make sure body and html take full height and remove margins */
+/* Reset margins and padding */
+body, html {
     margin: 0;
     padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-start;
+    height: 100%;
+    width: 100%;
 }
 
-.top-right-container {
+/* Ensure the button is positioned at the top-right */
+.button-container {
     position: absolute;
     top: 20px;
     right: 20px;
 }
 
+/* Button styling */
 .btn {
     background-color: #4CAF50;
     color: white;
