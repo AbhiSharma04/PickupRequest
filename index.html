@@ -7,118 +7,194 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="assets/style.css"> 
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            color: #343a40;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .form-group label {
+            font-weight: 600;
+        }
+
+        .form-control {
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        #responseMessage {
+            font-size: 18px;
+            font-weight: 500;
+            color: #28a745;
+        }
+
+        .disclaimer {
+            color: red;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <div class="button-container">
+        <a href="#" class="btn btn-primary" id="loginButton">Login</a>
+        <div id="disclaimer" class="disclaimer">Admin use only</div>
+    </div>
+
     <div class="container mt-5">
         <h1 class="text-center">Pickup Request Form</h1>
-        <form id="lostItemForm" class="mt-4">
-            <!-- Name -->
-            <div class="form-group">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" class="form-control" required>
+        <p class="text-center mt-3 mb-4">
+            Please provide your contact details and a brief description of the lost item at Boston Logan Airport. 
+            Our team will assist in efficient retrieval, packaging, and shipping of your item to your specified address.
+            For questions, call 123456789 or email at <a href="mailto:email@gmail.com">email@gmail.com</a>.
+         </p>
+         
+
+        <!-- Form Section -->
+        <div class="card">
+            <form id="lostItemForm" class="mt-4">
+                <!-- Name -->
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="text" id="phone" name="phone" class="form-control" required>
+                </div>
+
+                <!-- Shipping Address (include zip code) -->
+                <div class="form-group">
+                    <label for="address">Shipping Address (include zip code):</label>
+                    <input type="text" id="address" name="address" class="form-control" required>
+                </div>
+
+                <!-- Item Description -->
+                <div class="form-group">
+                    <label for="itemDescription">Item Description:</label>
+                    <input type="text" id="itemDescription" name="itemDescription" class="form-control" required>
+                </div>
+
+                <!-- Preferred Shipping Method -->
+                <div class="form-group">
+                    <label for="shippingMethod">Preferred Shipping Method:</label>
+                    <select id="shippingMethod" name="shippingMethod" class="form-control" required>
+                        <option value="" disabled selected>Select shipping method</option>
+                        <option value="Next Day Air">Next Day Air</option>
+                        <option value="2nd Day Air">2nd Day Air</option>
+                        <option value="3rd Day Select">3rd Day Select</option>
+                        <option value="Ground">Ground</option>
+                    </select>
+                </div>
+
+                <!-- Pickup Location -->
+                <div class="form-group">
+                    <label for="pickupLocation">Pickup Location:</label>
+                    <select id="pickupLocation" name="pickupLocation" class="form-control" required>
+                        <option value="" disabled selected>Select Pickup Location</option>
+                        <option value="TSA">TSA</option>
+                        <option value="Delta Airlines">Delta Airlines</option>
+                        <option value="MASSPORT">MASSPORT</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Inquiry ID/Claim Number -->
+                <div class="form-group">
+                    <label for="inquiryID">Inquiry ID/Claim Number:</label>
+                    <input type="text" id="inquiryID" name="inquiryID" class="form-control" required>
+                </div>
+
+                <!-- Date of Item Lost -->
+                <div class="form-group">
+                    <label for="dateOfLoss">Date of Item Lost:</label>
+                    <input type="date" id="dateOfLoss" name="dateOfLoss" class="form-control" required>
+                </div>
+
+                <!-- Today's Date -->
+                <div class="form-group">
+                    <label for="todaysDate">Today's Date:</label>
+                    <input type="date" id="todaysDate" name="todaysDate" class="form-control" required>
+                </div>
+
+                <!-- Loss or Damage Protection -->
+                <div class="form-group">
+                    <label for="lossProtection">Do you want Loss or Damage protection?</label>
+                    <select id="lossProtection" name="lossProtection" class="form-control" required>
+                        <option value="" disabled selected>Select an option</option>
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+
+                <!-- Conditional field: What is the total value of your lost item? -->
+                <div id="itemValueContainer" class="form-group" style="display:none;">
+                    <label for="itemValue">What is the total value of your lost item? (in dollars)</label>
+                    <input type="number" id="itemValue" name="itemValue" class="form-control">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+            </form>
+
+            <!-- Loading spinner -->
+            <div id="loadingSpinner" class="text-center mt-3" style="display:none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
             </div>
 
-            <!-- Email -->
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" class="form-control" required>
-            </div>
-
-            <!-- Phone -->
-            <div class="form-group">
-                <label for="phone">Phone:</label>
-                <input type="text" id="phone" name="phone" class="form-control" required>
-            </div>
-
-            <!-- Shipping Address (include zip code) -->
-            <div class="form-group">
-                <label for="address">Shipping Address (include zip code):</label>
-                <input type="text" id="address" name="address" class="form-control" required>
-            </div>
-
-            <!-- Item Description -->
-            <div class="form-group">
-                <label for="itemDescription">Item Description:</label>
-                <input type="text" id="itemDescription" name="itemDescription" class="form-control" required>
-            </div>
-
-            <!-- Preferred Shipping Method -->
-            <div class="form-group">
-                <label for="shippingMethod">Preferred Shipping Method:</label>
-                <select id="shippingMethod" name="shippingMethod" class="form-control" required>
-                    <option value="" disabled selected>Select shipping method</option>
-                    <option value="Next Day Air">Next Day Air</option>
-                    <option value="2nd Day Air">2nd Day Air</option>
-                    <option value="3rd Day Select">3rd Day Select</option>
-                    <option value="Ground">Ground</option>
-                </select>
-            </div>
-
-            <!-- Pickup Location -->
-            <div class="form-group">
-                <label for="pickupLocation">Pickup Location:</label>
-                <select id="pickupLocation" name="pickupLocation" class="form-control" required>
-                    <option value="" disabled selected>Select Pickup Location</option>
-                    <option value="TSA">TSA</option>
-                    <option value="Delta Airlines">Delta Airlines</option>
-                    <option value="MASSPORT">MASSPORT</option>
-                    <option value="Other">Other</option>
-                </select>
-
-            </div>
-
-            <!-- Inquiry ID/Claim Number -->
-            <div class="form-group">
-                <label for="inquiryID">Inquiry ID/Claim Number:</label>
-                <input type="text" id="inquiryID" name="inquiryID" class="form-control" required>
-            </div>
-
-            <!-- Date of Item Lost -->
-            <div class="form-group">
-                <label for="dateOfLoss">Date of Item Lost:</label>
-                <input type="date" id="dateOfLoss" name="dateOfLoss" class="form-control" required>
-            </div>
-
-            <!-- Today's Date -->
-            <div class="form-group">
-                <label for="todaysDate">Today's Date:</label>
-                <input type="date" id="todaysDate" name="todaysDate" class="form-control" required>
-            </div>
-
-            <!-- Loss or Damage Protection -->
-            <div class="form-group">
-                <label for="lossProtection">Do you want Loss or Damage protection?</label>
-                <select id="lossProtection" name="lossProtection" class="form-control" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </select>
-            </div>
-            <div class="button-container">
-                <!-- Link to the login page -->
-                <a href="login.html" class="btn btn-primary">Go to Login</a>
-            </div>
-
-            <!-- Conditional field: What is the total value of your lost item? -->
-            <div id="itemValueContainer" class="form-group" style="display:none;">
-                <label for="itemValue">What is the total value of your lost item? (in dollars)</label>
-                <input type="number" id="itemValue" name="itemValue" class="form-control">
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary btn-block">Submit</button>
-        </form>
-
-        <!-- Loading spinner -->
-        <div id="loadingSpinner" class="text-center mt-3" style="display:none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+            <!-- Response message -->
+            <div id="responseMessage" class="text-center mt-3"></div>
         </div>
-
-        <!-- Response message -->
-        <div id="responseMessage" class="text-center mt-3"></div>
     </div>
 
     <!-- Bootstrap JS and dependencies -->
@@ -126,8 +202,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-
-    <!-- Link to the external JavaScript file (Optional) -->
+    <!-- Link to the external JavaScript file -->
     <script src="assets/script.js"></script>
+
+
 </body>
 </html>
