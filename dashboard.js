@@ -1,6 +1,5 @@
 // Retrieve the JWT token from localStorage
 const accessToken = localStorage.getItem('accessToken');
-console.log('JWT Token:', accessToken);
 
 // Check if the user is logged in (token exists)
 if (!accessToken) {
@@ -11,9 +10,9 @@ if (!accessToken) {
 
     // Example: Fetch some protected data from AWS API Gateway using the token
     fetch('https://0mwdgczdv0.execute-api.us-east-2.amazonaws.com/prod/fetchLostItems', {
-        method: 'POST',  // Assuming POST request based on your earlier comments
+        method: 'POST',
         headers: {
-            'Authorization': `Bearer ${accessToken}`,  // Use the JWT token from Cognito
+            'Authorization': `Bearer ${accessToken}`,  // Send the JWT token in the Authorization header
             'Content-Type': 'application/json'
         }
     })
@@ -24,12 +23,12 @@ if (!accessToken) {
         return response.json();  // Parse the JSON response
     })
     .then(data => {
-        if (data.length > 0) {
-            console.log('Full data received:', data);
-            
-            // Create an HTML table to display the data
+        console.log('Protected data received:', data);
+
+        // Check if the data is an array and has content
+        if (data && data.length > 0) {
             let tableHTML = `
-                <table>
+                <table border="1">
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
@@ -45,8 +44,7 @@ if (!accessToken) {
                         <th>Item Value</th>
                         <th>Confirmation Number</th>
                     </tr>`;
-    
-            // Loop through the data and create table rows for each item
+            
             data.forEach(item => {
                 tableHTML += `
                     <tr>
@@ -61,14 +59,12 @@ if (!accessToken) {
                         <td>${item.dateOfLoss || 'N/A'}</td>
                         <td>${item.todaysDate || 'N/A'}</td>
                         <td>${item.lossProtection || 'N/A'}</td>
-                        <td>${item.itemValue || 'N/A'}</td>
+                        <td>${item.itemValue !== null ? item.itemValue : 'N/A'}</td>
                         <td>${item.confirmationNumber || 'N/A'}</td>
                     </tr>`;
             });
-    
+            
             tableHTML += `</table>`;
-    
-            // Display the table in your HTML
             document.getElementById('userData').innerHTML = tableHTML;
         } else {
             document.getElementById('userData').innerHTML = 'No data found.';
@@ -78,7 +74,6 @@ if (!accessToken) {
         console.error('Error fetching protected data:', error);
         document.getElementById('userData').innerHTML = 'Error loading data. Please try again later.';
     });
-    
 }
 
 // Logout functionality
