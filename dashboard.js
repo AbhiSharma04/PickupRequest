@@ -8,7 +8,7 @@ if (!accessToken) {
     // Display a message to the user
     document.getElementById('userData').innerHTML = 'You are successfully logged in!';
 
-    // Example: Fetch some protected data from AWS API Gateway using the token
+    // Fetch data from AWS API Gateway using the token
     fetch('https://0mwdgczdv0.execute-api.us-east-2.amazonaws.com/prod/fetchLostItems', {
         method: 'POST',
         headers: {
@@ -16,38 +16,19 @@ if (!accessToken) {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();  // Parse the JSON response
-    })
+    .then(response => response.json())  // Parse the response as JSON
     .then(data => {
-        console.log('Protected data received:', data);
+        console.log('Data received from API:', data);  // Log the data for debugging
+        if (data && data.body) {
+            // The body contains the data as a string, so we need to parse it
+            const parsedData = JSON.parse(data.body);  // Parse the body field
+            console.log('Parsed Data:', parsedData);  // Log parsed data for debugging
 
-        // Check if the data is an array and has content
-        if (data && data.length > 0) {
-            let tableHTML = `
-                <table border="1">
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Address</th>
-                        <th>Item Description</th>
-                        <th>Shipping Method</th>
-                        <th>Pickup Location</th>
-                        <th>Inquiry ID</th>
-                        <th>Date of Loss</th>
-                        <th>Today's Date</th>
-                        <th>Loss Protection</th>
-                        <th>Item Value</th>
-                        <th>Confirmation Number</th>
-                    </tr>`;
-            
-            data.forEach(item => {
-                tableHTML += `
-                    <tr>
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+                // If data is found, display it in a user-friendly way
+                let table = '<table class="table table-striped"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Item Description</th><th>Shipping Method</th><th>Pickup Location</th><th>Inquiry ID</th><th>Date of Loss</th><th>Today Date</th><th>Loss Protection</th><th>Item Value</th><th>Confirmation Number</th><th>Timestamp</th></tr></thead><tbody>';
+                parsedData.forEach(item => {
+                    table += `<tr>
                         <td>${item.name || 'N/A'}</td>
                         <td>${item.email || 'N/A'}</td>
                         <td>${item.phone || 'N/A'}</td>
@@ -61,11 +42,14 @@ if (!accessToken) {
                         <td>${item.lossProtection || 'N/A'}</td>
                         <td>${item.itemValue !== null ? item.itemValue : 'N/A'}</td>
                         <td>${item.confirmationNumber || 'N/A'}</td>
+                        <td>${item.timestamp || 'N/A'}</td>
                     </tr>`;
-            });
-            
-            tableHTML += `</table>`;
-            document.getElementById('userData').innerHTML = tableHTML;
+                });
+                table += '</tbody></table>';               
+                document.getElementById('userData').innerHTML = table;
+            } else {
+                document.getElementById('userData').innerHTML = 'No data found.';
+            }
         } else {
             document.getElementById('userData').innerHTML = 'No data found.';
         }
