@@ -7,6 +7,8 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDadIEEyl1jb2mROYz0skG12XqDmyvysk&libraries=places"></script>
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -216,11 +218,34 @@
                     </div>
                 </div>
 
-                <!-- Shipping Address (include zip code) -->
-                <div class="form-group">
-                    <label for="address">Shipping Address (include zip code):</label>
-                    <input type="text" id="address" name="address" class="form-control" required>
-                </div>
+                        <!-- Street Address and Apartment No in one row -->
+        <div class="form-row">
+            <div class="form-group col-md-9">
+                <label for="streetAddress">Street Address:</label>
+                <input type="text" id="streetAddress" name="streetAddress" class="form-control" required>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="aptNo">Apt/Unit No:</label>
+                <input type="text" id="aptNo" name="aptNo" class="form-control">
+            </div>
+        </div>
+
+        <!-- City, State, and Zip Code in another row -->
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" class="form-control" required>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="state">State:</label>
+                <input type="text" id="state" name="state" class="form-control" required>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="zipCode">Zip Code:</label>
+                <input type="text" id="zipCode" name="zipCode" class="form-control" required>
+            </div>
+        </div>
+
 
                 <!-- Item Description -->
                 <div class="form-group">
@@ -327,7 +352,6 @@
         </div>
     </div>
 
-
     <!-- Submission Overlay -->
     <div id="submissionOverlay">
         <div class="spinner-border text-primary" role="status">
@@ -401,7 +425,11 @@
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value,
+                streetAddress: document.getElementById('streetAddress').value,
+                aptNo: document.getElementById('aptNo').value, // Added apt number field
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipCode: document.getElementById('zipCode').value,
                 itemDescription: document.getElementById('itemDescription').value,
                 shippingMethod: document.getElementById('shippingMethod').value,
                 pickupLocation: document.getElementById('pickupLocation').value,
@@ -444,12 +472,59 @@
                 Array.from(form.elements).forEach(el => el.disabled = false);
             }
         });
+
         $('#confirmationModal').on('hidden.bs.modal', function () {
-    document.getElementById('lostItemForm').reset(); // Reset the form
-    document.getElementById('itemValueContainer').style.display = 'none'; // Hide conditional fields
-    document.getElementById('emailError').style.display = 'none'; // Hide validation errors
-    document.getElementById('email').classList.remove('is-invalid'); // Remove invalid class
-});
+            document.getElementById('lostItemForm').reset(); // Reset the form
+            document.getElementById('itemValueContainer').style.display = 'none'; // Hide conditional fields
+            document.getElementById('emailError').style.display = 'none'; // Hide validation errors
+            document.getElementById('email').classList.remove('is-invalid'); // Remove invalid class
+        });
+    let autocomplete;
+
+    function initAutocomplete() {
+        autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById('streetAddress'), { types: ['geocode'] }
+        );
+        autocomplete.addListener('place_changed', fillInAddress);
+    }
+
+    function fillInAddress() {
+        const place = autocomplete.getPlace();
+        let addressComponents = place.address_components;
+
+        let streetNumber = '', route = '', city = '', state = '', zipCode = '';
+
+        addressComponents.forEach(component => {
+            const types = component.types;
+            if (types.includes('street_number')) {
+                streetNumber = component.long_name;
+            }
+            if (types.includes('route')) {
+                route = component.long_name;
+            }
+            if (types.includes('locality')) {
+                city = component.long_name;
+            }
+            if (types.includes('administrative_area_level_1')) {
+                state = component.short_name;
+            }
+            if (types.includes('postal_code')) {
+                zipCode = component.long_name;
+            }
+        });
+
+        // Fill the form fields with the retrieved values
+        document.getElementById('streetAddress').value = `${streetNumber} ${route}`;
+        document.getElementById('city').value = city;
+        document.getElementById('state').value = state;
+        document.getElementById('zipCode').value = zipCode;
+    }
+
+    // Run the autocomplete initializer
+    document.addEventListener('DOMContentLoaded', function () {
+        initAutocomplete();
+    });
+
 
     </script>
 </body>
