@@ -4,30 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <!-- Include Bootstrap CSS for better styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-    <div class="container">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="text-center">Login</h2>
+                        <form id="loginForm">
+                            <!-- Username -->
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" name="username" class="form-control" required>
+                            </div>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
+                            <!-- Password -->
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" class="form-control" required>
+                            </div>
 
-            <button type="submit">Login</button>
-        </form>
-        <div id="loginStatus"></div>
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary btn-block">Login</button>
+                        </form>
+
+                        <!-- Status Message -->
+                        <div id="loginStatus" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Include AWS SDK and Cognito Identity SDK -->
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@5.2.3/dist/amazon-cognito-identity.min.js"></script>
 
-
-    
     <!-- Custom Login Script -->
     <script src="login.js"></script>
+
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
