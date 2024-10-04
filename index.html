@@ -7,7 +7,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="assets/style.css"> 
 </head>
 <body>
     <div class="container mt-5">
@@ -58,7 +58,14 @@
             <!-- Pickup Location -->
             <div class="form-group">
                 <label for="pickupLocation">Pickup Location:</label>
-                <input type="text" id="pickupLocation" name="pickupLocation" class="form-control" required>
+                <select id="pickupLocation" name="pickupLocation" class="form-control" required>
+                    <option value="" disabled selected>Select Pickup Location</option>
+                    <option value="TSA">TSA</option>
+                    <option value="Delta Airlines">Delta Airlines</option>
+                    <option value="MASSPORT">MASSPORT</option>
+                    <option value="Other">Other</option>
+                </select>
+
             </div>
 
             <!-- Inquiry ID/Claim Number -->
@@ -121,6 +128,6 @@
 
 
     <!-- Link to the external JavaScript file (Optional) -->
-    <script src="script.js"></script>
+    <script src="assets/script.js"></script>
 </body>
 </html>
