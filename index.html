@@ -419,17 +419,21 @@
             // Disable form fields and show overlay
             Array.from(form.elements).forEach(el => el.disabled = true);
             document.getElementById('submissionOverlay').style.display = 'block';
+            const streetAddress = document.getElementById('streetAddress').value;
+            const aptNo = document.getElementById('aptNo').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const zipCode = document.getElementById('zipCode').value;
+
+            const fullAddress = `${streetAddress}${aptNo ? ', Apt/Unit ' + aptNo : ''}, ${city}, ${state}, ${zipCode}`;
+
 
             // Gather form data
             const formData = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
-                streetAddress: document.getElementById('streetAddress').value,
-                aptNo: document.getElementById('aptNo').value, // Added apt number field
-                city: document.getElementById('city').value,
-                state: document.getElementById('state').value,
-                zipCode: document.getElementById('zipCode').value,
+                address: fullAddress,
                 itemDescription: document.getElementById('itemDescription').value,
                 shippingMethod: document.getElementById('shippingMethod').value,
                 pickupLocation: document.getElementById('pickupLocation').value,
