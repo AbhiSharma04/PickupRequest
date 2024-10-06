@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const accessToken = localStorage.getItem('accessToken');
 
     // Check if the user is logged in (token exists)
@@ -15,21 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('https://0mwdgczdv0.execute-api.us-east-2.amazonaws.com/prod/fetchLostItems', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,  // Send the JWT token in the Authorization header
+                'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            console.log('API response received:', response);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Data received from API:', data);
-
-            if (data && data.body) {
+            .then(response => response.json())
+            .then(data => {
                 const parsedData = JSON.parse(data.body);
-                console.log('Parsed Data:', parsedData);
-
                 if (Array.isArray(parsedData) && parsedData.length > 0) {
                     let tableBody = document.getElementById('tableBody');
                     tableBody.innerHTML = '';  // Clear the table body
@@ -37,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     parsedData.forEach(item => {
                         let row = `
                             <tr>
+                                <td>${item.timestamp || 'N/A'}</td>
                                 <td>${item.name || 'N/A'}</td>
                                 <td>${item.email || 'N/A'}</td>
                                 <td>${item.phone || 'N/A'}</td>
@@ -46,114 +39,87 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <td>${item.pickupLocation || 'N/A'}</td>
                                 <td>${item.inquiryID || 'N/A'}</td>
                                 <td>${item.dateOfLoss || 'N/A'}</td>
-                                <td>${item.timestamp || 'N/A'}</td>
+                                <td>${item.todaysDate || 'N/A'}</td>
+                                <td>
+                                    <input type="checkbox" ${item.shippingCompleted ? 'checked' : ''} 
+                                        data-confirmation-number="${item.confirmationNumber}" 
+                                        data-initial-value="${item.shippingCompleted}" 
+                                        onchange="handleShippingStatusChange(event)">
+                                </td>
                             </tr>`;
                         tableBody.insertAdjacentHTML('beforeend', row);
                     });
                 } else {
                     document.getElementById('userData').innerHTML = 'No data found.';
                 }
-            } else {
-                document.getElementById('userData').innerHTML = 'No data found.';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching protected data:', error);
-            document.getElementById('userData').innerHTML = 'Error loading data. Please try again later.';
-        });
+            })
+            .catch(error => {
+                console.error('Error fetching protected data:', error);
+                document.getElementById('userData').innerHTML = 'Error loading data. Please try again later.';
+            });
     }
 
     // Logout functionality
     const logoutButton = document.getElementById('logout');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', function() {
-            localStorage.clear();  // Clear the stored token
-            window.location.href = 'login.html';  // Redirect to login page
+    logoutButton.addEventListener('click', function () {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    });
+});
+
+// Handle shipping status change
+function handleShippingStatusChange(event) {
+    const checkbox = event.target;
+    const confirmationNumber = checkbox.getAttribute('data-confirmation-number');
+    const initialValue = checkbox.getAttribute('data-initial-value') === 'true';
+
+    // Check if the value has changed before making the API call
+    if (initialValue === checkbox.checked) {
+        console.log('No change detected in shipping status, skipping update.');
+        return;
+    }
+
+    // Show confirmation dialog before proceeding
+    const shippingCompleted = checkbox.checked;
+    const action = shippingCompleted ? 'mark as completed' : 'mark as not completed';
+    const confirmation = confirm(`Are you sure you want to ${action} the shipping status for this item?`);
+
+    // If the user confirms the action, proceed with the update
+    if (confirmation) {
+        console.log('Updating shipping status...');
+        console.log('confirmationNumber: ', confirmationNumber);
+        console.log('shippingCompleted: ', shippingCompleted);
+
+        // Send API request to update the shipping status
+        updateShippingStatus(confirmationNumber, shippingCompleted);
+    } else {
+        // Revert the checkbox back to its original state if the user cancels
+        checkbox.checked = initialValue;
+    }
+}
+
+// Function to update shipping status via API
+async function updateShippingStatus(confirmationNumber, shippingCompleted) {
+    try {
+        const response = await fetch('https://rm87okece2.execute-api.us-east-2.amazonaws.com/prod/updateStatus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ confirmationNumber, shippingCompleted })
         });
-    }
-});
 
+        const data = await response.json();
+        console.log('Full API Response: ', data);
 
-let sortOrder = 'asc'; // Track sort order
-
-function sortTable(column) {
-    const table = document.getElementById("tableBody");
-    const rows = Array.from(table.querySelectorAll("tr"));
-
-    rows.sort((a, b) => {
-        let valA = a.querySelector(`td[data-column="${column}"]`).innerText;
-        let valB = b.querySelector(`td[data-column="${column}"]`).innerText;
-        
-        if (sortOrder === 'asc') {
-            return valA.localeCompare(valB);
+        if (response.ok) {
+            console.log('Shipping status updated successfully!');
         } else {
-            return valB.localeCompare(valA);
+            console.error('Failed to update shipping status:', data.error);
+            alert('Error: ' + data.error);
         }
-    });
-
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-
-    // Clear and append sorted rows
-    table.innerHTML = "";
-    rows.forEach(row => table.appendChild(row));
-}
-
-document.getElementById('filterInput').addEventListener('input', function() {
-    const filterValue = this.value.toLowerCase();
-    const rows = document.getElementById('tableBody').getElementsByTagName('tr');
-
-    Array.from(rows).forEach(row => {
-        const name = row.cells[0].textContent.toLowerCase();
-        const email = row.cells[1].textContent.toLowerCase();
-        if (name.includes(filterValue) || email.includes(filterValue)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-});
-
-let currentPage = 1;
-const rowsPerPage = 5; // Customize this as needed
-function paginateTable(data) {
-    const tableBody = document.getElementById('tableBody');
-    tableBody.innerHTML = '';  // Clear the table body
-
-    // Loop through the data and insert it into the table
-    data.forEach(item => {
-        const row = `<tr>
-            <td>${item.name || 'N/A'}</td>
-            <td>${item.email || 'N/A'}</td>
-            <td>${item.phone || 'N/A'}</td>
-            <td>${item.address || 'N/A'}</td>
-            <td>${item.itemDescription || 'N/A'}</td>
-            <td>${item.shippingMethod || 'N/A'}</td>
-            <td>${item.pickupLocation || 'N/A'}</td>
-            <td>${item.inquiryID || 'N/A'}</td>
-            <td>${item.dateOfLoss || 'N/A'}</td>
-            <td>${item.todaysDate || 'N/A'}</td>
-            <td>${item.lossProtection || 'N/A'}</td>
-            <td>${item.itemValue !== null ? item.itemValue : 'N/A'}</td>
-            <td>${item.confirmationNumber || 'N/A'}</td>
-            <td>${item.timestamp || 'N/A'}</td>
-        </tr>`;
-        tableBody.insertAdjacentHTML('beforeend', row);
-    });
-}
-
-
-
-// Handle page navigation
-document.getElementById('prevPage').addEventListener('click', function() {
-    if (currentPage > 1) {
-        currentPage--;
-        paginateTable(parsedData);
+    } catch (error) {
+        console.error('Error updating shipping status:', error);
+        alert('Unknown error occurred');
     }
-});
-
-document.getElementById('nextPage').addEventListener('click', function() {
-    if (currentPage * rowsPerPage < parsedData.length) {
-        currentPage++;
-        paginateTable(parsedData);
-    }
-});
+}
