@@ -3,40 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Dashboard with Features</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Custom Styles -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        h2 {
+            color: #343a40;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+        }
+
+        #statusFilter,
+        #filterInput {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        /* General styling for table headers */
+        table thead th {
+            background-color: #f8f9fa; /* Ensure consistent background color */
+            color: #343a40; /* Ensure consistent text color */
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Specific styling for the last column's header */
+        table thead th:last-child {
+            background-color: #f8f9fa; /* Same background color */
+            color: #343a40; /* Same text color */
+            position: sticky;
+            right: 0;
+            z-index: 1;
+        }
+
+        /* Sticky last column for the body */
+        .table tbody td:last-child {
+            position: sticky;
+            right: 0;
+            background-color: #ffffff; /* Keep the background white for body rows */
+            z-index: 1;
+        }
+
+        /* Hover effect for table rows */
+        table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Styling for table cells */
+        table tbody td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .pagination {
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #pageIndicator {
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            color: #343a40;
+        }
+
+        .btn {
+            display: block;
+            width: 100px;
+            margin: 30px auto 0;
+        }
+
+        /* Custom checkbox styling */
+        input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 14px;
+            }
+
+            table th,
+            table td {
+                padding: 8px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container">
         <h2>Welcome to the Dashboard</h2>
 
+        <!-- Status Filter for Shipping Completed/Not Completed -->
+        <div class="form-group">
+            <label for="statusFilter">Filter by Shipping Status:</label>
+            <select id="statusFilter" class="form-control">
+                <option value="all">All</option>
+                <option value="completed">Shipping Completed</option>
+                <option value="pending">Shipping Pending</option>
+            </select>
+        </div>
+
         <!-- Search bar for filtering -->
-        <input type="text" id="filterInput" class="form-control" placeholder="Filter by Name or Email" />
+        <input type="text" id="filterInput" class="form-control" placeholder="Filter by Name or Phone" style="margin-top: 10px;">
 
         <!-- Table to display data -->
-        <table class="table table-bordered table-hover mt-3">
-            <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th onclick="sortTable('name')">Name</th>
-                    <th onclick="sortTable('email')">Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Item Description</th>
-                    <th>Shipping Method</th>
-                    <th>Pickup Location</th>
-                    <th>Inquiry ID</th>
-                    <th>Date of Loss</th>
-                    <th>Date of form filled</th>
-                    <th>Shipping Completed</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <!-- Data will be dynamically inserted here -->
-            </tbody>
-        </table>
-        <div id="userData"></div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover mt-3">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th onclick="sortTable('name')">Name</th>
+                        <th onclick="sortTable('email')">Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Item Description</th>
+                        <th>Shipping Method</th>
+                        <th>Pickup Location</th>
+                        <th>Inquiry ID</th>
+                        <th>Date of Loss</th>
+                        <th>Shipping Completed</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
 
         <!-- Pagination controls -->
         <nav>
@@ -49,6 +169,7 @@
                 </li>
             </ul>
         </nav>
+        <div id="pageIndicator" style="text-align: center; margin-bottom: 10px;"></div>
 
         <button id="logout" class="btn btn-danger">Logout</button>
     </div>

@@ -1,125 +1,191 @@
 document.addEventListener('DOMContentLoaded', function () {
     const accessToken = localStorage.getItem('accessToken');
 
-    // Check if the user is logged in (token exists)
     if (!accessToken) {
-        console.log('No access token found, redirecting to login.');
-        window.location.href = 'login.html';  // Redirect to login if no token is found
+        window.location.href = 'login.html';
     } else {
-        console.log('Access token found, proceeding to fetch data.');
+        fetchData();
+    }
 
-        // Display a message to the user
-        document.getElementById('userData').innerHTML = 'You are successfully logged in!';
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let filteredData = [];  // Data after filtering
+    let allData = [];  // All data from API
 
-        // Fetch data from AWS API Gateway using the token
+    // Fetch data from API
+    function fetchData() {
         fetch('https://0mwdgczdv0.execute-api.us-east-2.amazonaws.com/prod/fetchLostItems', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
                 'Content-Type': 'application/json'
             }
         })
             .then(response => response.json())
             .then(data => {
-                const parsedData = JSON.parse(data.body);
-                if (Array.isArray(parsedData) && parsedData.length > 0) {
-                    let tableBody = document.getElementById('tableBody');
-                    tableBody.innerHTML = '';  // Clear the table body
+                if (data && data.body) {
+                    allData = JSON.parse(data.body);
 
-                    parsedData.forEach(item => {
-                        let row = `
-                            <tr>
-                                <td>${item.timestamp || 'N/A'}</td>
-                                <td>${item.name || 'N/A'}</td>
-                                <td>${item.email || 'N/A'}</td>
-                                <td>${item.phone || 'N/A'}</td>
-                                <td>${item.address || 'N/A'}</td>
-                                <td>${item.itemDescription || 'N/A'}</td>
-                                <td>${item.shippingMethod || 'N/A'}</td>
-                                <td>${item.pickupLocation || 'N/A'}</td>
-                                <td>${item.inquiryID || 'N/A'}</td>
-                                <td>${item.dateOfLoss || 'N/A'}</td>
-                                <td>${item.todaysDate || 'N/A'}</td>
-                                <td>
-                                    <input type="checkbox" ${item.shippingCompleted ? 'checked' : ''} 
-                                        data-confirmation-number="${item.confirmationNumber}" 
-                                        data-initial-value="${item.shippingCompleted}" 
-                                        onchange="handleShippingStatusChange(event)">
-                                </td>
-                            </tr>`;
-                        tableBody.insertAdjacentHTML('beforeend', row);
+                    // Sort data by the most recent timestamp
+                    allData.sort((a, b) => {
+                        const timestampA = new Date(a.timestamp || 0);
+                        const timestampB = new Date(b.timestamp || 0);
+                        return timestampB - timestampA;  // Descending order
                     });
+
+                    filteredData = allData;  // Store sorted data into filteredData
+                    paginateTable(filteredData);  // Display the sorted data with pagination
                 } else {
-                    document.getElementById('userData').innerHTML = 'No data found.';
+                    console.error('No data found:', data);
                 }
             })
-            .catch(error => {
-                console.error('Error fetching protected data:', error);
-                document.getElementById('userData').innerHTML = 'Error loading data. Please try again later.';
-            });
+            .catch(error => console.error('Error fetching data:', error));
     }
 
-    // Logout functionality
-    const logoutButton = document.getElementById('logout');
-    logoutButton.addEventListener('click', function () {
-        localStorage.clear();
-        window.location.href = 'login.html';
+    // Render table based on data
+    function renderTable(data) {
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '';  // Clear existing table data
+
+        const start = (currentPage - 1) * rowsPerPage;
+
+        data.forEach((item, index) => {
+            const row = `
+                <tr>
+                    <td>${start + index + 1}</td> <!-- Serial Number (S.No) Column -->
+                    <td>${item.name || 'N/A'}</td>
+                    <td>${item.email || 'N/A'}</td>
+                    <td>${item.phone || 'N/A'}</td>
+                    <td>${item.address || 'N/A'}</td>
+                    <td>${item.itemDescription || 'N/A'}</td>
+                    <td>${item.shippingMethod || 'N/A'}</td>
+                    <td>${item.pickupLocation || 'N/A'}</td>
+                    <td>${item.inquiryID || 'N/A'}</td>
+                    <td>${item.dateOfLoss || 'N/A'}</td>
+                    <td><input type="checkbox" class="shipping-status" data-id="${item.confirmationNumber}" ${item.shippingCompleted ? 'checked' : ''}></td>
+                </tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+
+        // Update the page indicator
+        updatePageIndicator(data);
+    }
+
+    // Paginate table
+    function paginateTable(data) {
+        const start = (currentPage - 1) * rowsPerPage;
+        const paginatedData = data.slice(start, start + rowsPerPage);
+        renderTable(paginatedData);
+    }
+
+    document.getElementById('prevPage').addEventListener('click', function () {
+        if (currentPage > 1) {
+            currentPage--;
+            paginateTable(filteredData);
+        }
     });
-});
 
-// Handle shipping status change
-function handleShippingStatusChange(event) {
-    const checkbox = event.target;
-    const confirmationNumber = checkbox.getAttribute('data-confirmation-number');
-    const initialValue = checkbox.getAttribute('data-initial-value') === 'true';
+    document.getElementById('nextPage').addEventListener('click', function () {
+        if (currentPage * rowsPerPage < filteredData.length) {
+            currentPage++;
+            paginateTable(filteredData);
+        }
+    });
 
-    // Check if the value has changed before making the API call
-    if (initialValue === checkbox.checked) {
-        console.log('No change detected in shipping status, skipping update.');
-        return;
-    }
+    // Search functionality
+    document.getElementById('filterInput').addEventListener('input', function () {
+        const filterValue = this.value.toLowerCase();
+        currentPage=1;
+        filteredData = allData.filter(item => {
+            const name = item.name ? item.name.toLowerCase() : '';
+            //const email = item.email ? item.email.toLowerCase() : '';
+            const phone = item.phone ? item.phone.toLowerCase() : '';
+            return name.includes(filterValue) || phone.includes(filterValue);
+        });
+        paginateTable(filteredData);
+    });
 
-    // Show confirmation dialog before proceeding
-    const shippingCompleted = checkbox.checked;
-    const action = shippingCompleted ? 'mark as completed' : 'mark as not completed';
-    const confirmation = confirm(`Are you sure you want to ${action} the shipping status for this item?`);
+    // Filter by shipping status
+    document.getElementById('statusFilter').addEventListener('change', function () {
+        const status = this.value;
+        currentPage=1;
+        filteredData = allData.filter(item => {
+            if (status === 'completed') {
+                return item.shippingCompleted;
+            } else if (status === 'pending') {
+                return !item.shippingCompleted;
+            }
+            return true;  // Show all items if 'all' is selected
+        });
+        paginateTable(filteredData);
+    });
 
-    // If the user confirms the action, proceed with the update
-    if (confirmation) {
-        console.log('Updating shipping status...');
-        console.log('confirmationNumber: ', confirmationNumber);
-        console.log('shippingCompleted: ', shippingCompleted);
+    // Table sorting
+    let sortOrder = 'asc';
+    window.sortTable = function (column) {
+        filteredData.sort((a, b) => {
+            const valA = a[column] ? a[column].toLowerCase() : '';
+            const valB = b[column] ? b[column].toLowerCase() : '';
+            return (sortOrder === 'asc') ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        currentPage = 1;
+        paginateTable(filteredData);
+    };
 
-        // Send API request to update the shipping status
-        updateShippingStatus(confirmationNumber, shippingCompleted);
-    } else {
-        // Revert the checkbox back to its original state if the user cancels
-        checkbox.checked = initialValue;
-    }
-}
+    // Event delegation to handle dynamically inserted checkboxes
+    document.getElementById('tableBody').addEventListener('change', function (event) {
+        if (event.target.classList.contains('shipping-status')) {
+            const confirmationNumber = event.target.dataset.id;
+            const shippingCompleted = event.target.checked;
 
-// Function to update shipping status via API
-async function updateShippingStatus(confirmationNumber, shippingCompleted) {
-    try {
-        const response = await fetch('https://rm87okece2.execute-api.us-east-2.amazonaws.com/prod/updateStatus', {
+            // Confirm with the user before updating
+            const confirmation = confirm('Are you sure you want to update the shipping status?');
+            if (confirmation) {
+                updateShippingStatus(confirmationNumber, shippingCompleted);
+            } else {
+                // Revert the checkbox to its original state if the user cancels
+                event.target.checked = !event.target.checked;
+            }
+        }
+    });
+
+    // Function to update shipping status
+    function updateShippingStatus(confirmationNumber, shippingCompleted) {
+        fetch('https://rm87okece2.execute-api.us-east-2.amazonaws.com/prod/updateStatus', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ confirmationNumber, shippingCompleted })
-        });
-
-        const data = await response.json();
-        console.log('Full API Response: ', data);
-
-        if (response.ok) {
-            console.log('Shipping status updated successfully!');
-        } else {
-            console.error('Failed to update shipping status:', data.error);
-            alert('Error: ' + data.error);
-        }
-    } catch (error) {
-        console.error('Error updating shipping status:', error);
-        alert('Unknown error occurred');
+            body: JSON.stringify({
+                confirmationNumber: confirmationNumber,
+                shippingCompleted: shippingCompleted
+            })
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.message) {
+                    fetchData();  // Refresh the table after update
+                } else {
+                    alert('Failed to update shipping status');
+                    console.error('Failed to update shipping status:', result.error);
+                }
+            })
+            .catch(error => console.error('Error updating shipping status:', error));
     }
-}
+
+    // Logout functionality
+    document.getElementById('logout').addEventListener('click', function () {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    });
+
+    // Function to update page indicator
+    function updatePageIndicator(data) {
+        const start = (currentPage - 1) * rowsPerPage + 1;
+        const end = Math.min(start + rowsPerPage - 1, filteredData.length);
+        const total = filteredData.length;
+
+        document.getElementById('pageIndicator').textContent = `Showing ${start} to ${end} of ${total} items (Page ${currentPage})`;
+    }
+});
