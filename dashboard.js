@@ -9,37 +9,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let currentPage = 1;
     const rowsPerPage = 10;
-    let filteredData = [];  // Data after filtering
+    let filteredData = [];  // Data after filtering or sorting
     let allData = [];  // All data from API
+    let defaultSortedData = [];  // Original default-sorted data (by timestamp)
+    let currentStatusFilter = 'all';  // Keep track of the current status filter
 
     // Fetch data from API
     function fetchData() {
-        fetch('https://0mwdgczdv0.execute-api.us-east-2.amazonaws.com/prod/fetchLostItems', {
+        return fetch('https://0mwdgczdv0.execute-api.us-east-2.amazonaws.com/prod/fetchLostItems', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
                 'Content-Type': 'application/json'
             }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.body) {
-                    allData = JSON.parse(data.body);
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.body) {
+                allData = JSON.parse(data.body);
 
-                    // Sort data by the most recent timestamp
-                    allData.sort((a, b) => {
-                        const timestampA = new Date(a.timestamp || 0);
-                        const timestampB = new Date(b.timestamp || 0);
-                        return timestampB - timestampA;  // Descending order
-                    });
+                // Sort data by the most recent timestamp (this will be our "default" sorting)
+                defaultSortedData = allData.slice().sort((a, b) => {
+                    const timestampA = new Date(a.timestamp || 0);
+                    const timestampB = new Date(b.timestamp || 0);
+                    return timestampB - timestampA;  // Descending order
+                });
 
-                    filteredData = allData;  // Store sorted data into filteredData
-                    paginateTable(filteredData);  // Display the sorted data with pagination
-                } else {
-                    console.error('No data found:', data);
-                }
-            })
-            .catch(error => console.error('Error fetching data:', error));
+                // Initially apply the current filter (by default, it's 'all')
+                applyShippingStatusFilter(currentStatusFilter);
+            } else {
+                console.error('No data found:', data);
+            }
+        })
+        .catch(error => console.error('Error fetching data:', error));
     }
 
     // Render table based on data
@@ -95,43 +97,72 @@ document.addEventListener('DOMContentLoaded', function () {
     // Search functionality
     document.getElementById('filterInput').addEventListener('input', function () {
         const filterValue = this.value.toLowerCase();
-        currentPage=1;
+        currentPage = 1;
         filteredData = allData.filter(item => {
             const name = item.name ? item.name.toLowerCase() : '';
-            //const email = item.email ? item.email.toLowerCase() : '';
             const phone = item.phone ? item.phone.toLowerCase() : '';
             return name.includes(filterValue) || phone.includes(filterValue);
         });
         paginateTable(filteredData);
     });
 
-    // Filter by shipping status
-    document.getElementById('statusFilter').addEventListener('change', function () {
-        const status = this.value;
-        currentPage=1;
-        filteredData = allData.filter(item => {
-            if (status === 'completed') {
-                return item.shippingCompleted;
-            } else if (status === 'pending') {
-                return !item.shippingCompleted;
-            }
-            return true;  // Show all items if 'all' is selected
-        });
+    document.getElementById('dateFilter').addEventListener('change', function () {
+        const selectedRange = this.value;
+        const currentDate = new Date();
+
+        if (selectedRange === 'all') {
+            filteredData = defaultSortedData.slice();  // Reset to default sorted data
+        } else {
+            const monthOffset = parseInt(selectedRange);  // 1, 3, or 6 months
+            filteredData = allData.filter(item => {
+                const itemDate = new Date(item.timestamp);
+                const cutoffDate = new Date(currentDate.setMonth(currentDate.getMonth() - monthOffset));
+                return itemDate >= cutoffDate;
+            });
+        }
+
+        currentPage = 1;  // Reset to first page
         paginateTable(filteredData);
     });
 
-    // Table sorting
-    let sortOrder = 'asc';
-    window.sortTable = function (column) {
-        filteredData.sort((a, b) => {
-            const valA = a[column] ? a[column].toLowerCase() : '';
-            const valB = b[column] ? b[column].toLowerCase() : '';
-            return (sortOrder === 'asc') ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        });
-        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    // Filter by shipping status
+    document.getElementById('statusFilter').addEventListener('change', function () {
+        currentStatusFilter = this.value;
         currentPage = 1;
+        applyShippingStatusFilter(currentStatusFilter);
+    });
+
+    function applyShippingStatusFilter(status) {
+        if (status === 'all') {
+            filteredData = defaultSortedData.slice();
+        } else {
+            filteredData = allData.filter(item => {
+                if (status === 'completed') {
+                    return item.shippingCompleted;
+                } else if (status === 'pending') {
+                    return !item.shippingCompleted;
+                }
+                return true;
+            });
+        }
         paginateTable(filteredData);
-    };
+    }
+
+    // Sorting with dropdown
+    document.getElementById('sortOptions').addEventListener('change', function () {
+        const sortOption = this.value;
+
+        if (sortOption === 'default') {
+            filteredData = defaultSortedData.slice();  // Copy the default-sorted data
+        } else if (sortOption === 'nameAsc') {
+            filteredData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        } else if (sortOption === 'nameDesc') {
+            filteredData.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+        }
+
+        currentPage = 1;  // Reset to page 1 when sorting changes
+        paginateTable(filteredData);
+    });
 
     // Event delegation to handle dynamically inserted checkboxes
     document.getElementById('tableBody').addEventListener('change', function (event) {
@@ -162,16 +193,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 shippingCompleted: shippingCompleted
             })
         })
-            .then(response => response.json())
-            .then(result => {
-                if (result.message) {
-                    fetchData();  // Refresh the table after update
-                } else {
-                    alert('Failed to update shipping status');
-                    console.error('Failed to update shipping status:', result.error);
-                }
-            })
-            .catch(error => console.error('Error updating shipping status:', error));
+        .then(response => response.json())
+        .then(result => {
+            if (result.message) {
+                fetchData().then(() => {
+                    applyShippingStatusFilter(currentStatusFilter);  // Reapply the filter after the update
+                    paginateTable(filteredData);  // Display the filtered and updated data
+                });
+            } else {
+                alert('Failed to update shipping status');
+                console.error('Failed to update shipping status:', result.error);
+            }
+        })
+        .catch(error => console.error('Error updating shipping status:', error));
     }
 
     // Logout functionality
