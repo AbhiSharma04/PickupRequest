@@ -145,11 +145,31 @@
             text-align: center;
             padding-top: 200px;
         }
+        .disclaimer {
+        display: none;  /* Initially hidden */
+        position: absolute;  /* Positioned relative to the login button */
+        top: 50px;  /* Adjust this value to position it correctly relative to the button */
+        right: 20px;
+        background-color: #f8d7da;  /* Light red background for warning */
+        color: #721c24;  /* Dark red text */
+        padding: 10px 20px;  /* Add padding for better spacing */
+        border: 1px solid #f5c6cb;  /* Border that matches the background */
+        border-radius: 5px;  /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Slight shadow for a floating effect */
+        font-size: 14px;  /* Adjust the font size */
+        font-weight: bold;  /* Make the text bold */
+        z-index: 1000;  /* Ensure it's on top of other elements */
+        animation: fadeIn 0.5s ease;  /* Fade-in animation */
+    }
 
         /* Modal animation */
         .modal-content {
             animation: fadeInUp 0.5s ease-in-out;
         }
+        #loginButton:hover {
+        background-color: #0056b3;  /* Darker blue */
+        color: #fff;
+    }
 
         @keyframes fadeInUp {
             from {
@@ -374,6 +394,11 @@
         const today = new Date().toISOString().substr(0, 10); // Get current date in YYYY-MM-DD format
         document.getElementById('todaysDate').value = today; // Display the date in the disabled field
         document.getElementById('todaysDateHidden').value = today; // Set value in hidden field for submission
+        const disclaimer = document.getElementById('disclaimer');
+        disclaimer.style.display = 'none';
+        loginButton.addEventListener('mouseover', function() {
+        disclaimer.style.display = 'block';
+        });
         });
         // Tooltip initialization
         $(function () {
@@ -410,79 +435,95 @@
         });
 
         // Handle form submission
-        document.getElementById('lostItemForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
+        // Handle form submission
+// Handle form submission
+document.getElementById('lostItemForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-            const form = document.getElementById('lostItemForm');
-            const submitButton = document.querySelector('button[type="submit"]');
-            
-            // Disable form fields and show overlay
-            Array.from(form.elements).forEach(el => el.disabled = true);
-            document.getElementById('submissionOverlay').style.display = 'block';
-            const streetAddress = document.getElementById('streetAddress').value;
-            const aptNo = document.getElementById('aptNo').value;
-            const city = document.getElementById('city').value;
-            const state = document.getElementById('state').value;
-            const zipCode = document.getElementById('zipCode').value;
+    const form = document.getElementById('lostItemForm');
+    const submitSpinner = document.getElementById('submitSpinner'); // Spinner reference
 
-            const fullAddress = `${streetAddress}${aptNo ? ', Apt/Unit ' + aptNo : ''}, ${city}, ${state}, ${zipCode}`;
+    // Disable form fields and show overlay
+    console.log("Form submission started");
+    Array.from(form.elements).forEach(el => el.disabled = true);
+    submitSpinner.style.display = 'inline-block';  // Show the spinner
+    document.getElementById('submissionOverlay').style.display = 'block';
+    
+    const streetAddress = document.getElementById('streetAddress').value || '';
+    const aptNo = document.getElementById('aptNo') ? document.getElementById('aptNo').value : '';
+    const city = document.getElementById('city').value || '';
+    const state = document.getElementById('state').value || '';
+    const zipCode = document.getElementById('zipCode').value || '';
 
+    const fullAddress = `${streetAddress}${aptNo ? ', Apt/Unit ' + aptNo : ''}, ${city}, ${state}, ${zipCode}`;
 
-            // Gather form data
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                address: fullAddress,
-                itemDescription: document.getElementById('itemDescription').value,
-                shippingMethod: document.getElementById('shippingMethod').value,
-                pickupLocation: document.getElementById('pickupLocation').value,
-                inquiryID: document.getElementById('inquiryID').value,
-                dateOfLoss: document.getElementById('dateOfLoss').value,
-                todaysDate: document.getElementById('todaysDate').value,
-                lossProtection: document.getElementById('lossProtection').value,
-                itemValue: document.getElementById('lossProtection').value === 'Yes' ? document.getElementById('itemValue').value : null
-            };
+    // Gather form data
+    const formData = {
+        name: document.getElementById('name').value || '',
+        email: document.getElementById('email').value || '',
+        phone: document.getElementById('phone').value || '',
+        address: fullAddress,
+        itemDescription: document.getElementById('itemDescription').value || '',
+        shippingMethod: document.getElementById('shippingMethod').value || '',
+        pickupLocation: document.getElementById('pickupLocation').value || '',
+        inquiryID: document.getElementById('inquiryID').value || '',
+        dateOfLoss: document.getElementById('dateOfLoss').value || '',
+        todaysDate: document.getElementById('todaysDate').value || '',
+        lossProtection: document.getElementById('lossProtection') ? document.getElementById('lossProtection').value : '',
+        itemValue: document.getElementById('lossProtection').value === 'Yes' ? document.getElementById('itemValue').value : null
+    };
 
-            try {
-                const response = await fetch('https://2pxhndeqq1.execute-api.us-east-2.amazonaws.com/prod/SubmitLostItem', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
+    try {
+        console.log("Submitting form data:", formData); // Log form data for debugging
 
-                const data = await response.json();
-                const responseBody = JSON.parse(data.body);
-
-                // Hide overlay
-                document.getElementById('submissionOverlay').style.display = 'none';
-
-                // Show confirmation modal
-                if (response.ok) {
-                    document.getElementById('confirmationNumber').textContent = responseBody.confirmationNumber;
-                    document.getElementById('emailAddress').textContent = formData.email;
-                    $('#confirmationModal').modal('show');
-                } else {
-                    document.getElementById('responseMessage').innerHTML = `<div class="alert alert-danger">Error: ${responseBody.error || 'Failed to submit form'}</div>`;
-                }
-            } catch (error) {
-                document.getElementById('submissionOverlay').style.display = 'none';
-                document.getElementById('responseMessage').innerHTML = `<div class="alert alert-danger">Error: Could not submit form</div>`;
-                console.error('Error during submission:', error);
-            } finally {
-                // Re-enable form fields after submission
-                Array.from(form.elements).forEach(el => el.disabled = false);
-            }
+        // Make the API request
+        const response = await fetch('https://2pxhndeqq1.execute-api.us-east-2.amazonaws.com/prod/SubmitLostItem', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
         });
 
-        $('#confirmationModal').on('hidden.bs.modal', function () {
-            document.getElementById('lostItemForm').reset(); // Reset the form
-            document.getElementById('itemValueContainer').style.display = 'none'; // Hide conditional fields
-            document.getElementById('emailError').style.display = 'none'; // Hide validation errors
-            document.getElementById('email').classList.remove('is-invalid'); // Remove invalid class
-        });
+        if (!response.ok) {
+            throw new Error('Failed to submit form');
+        }
+
+        const data = await response.json();
+        console.log("Response data:", data); // Log the response for debugging
+        const responseBody = JSON.parse(data.body);
+
+        // Hide overlay and spinner
+        document.getElementById('submissionOverlay').style.display = 'none';
+        submitSpinner.style.display = 'none';
+        console.log("Form submitted successfully. Spinner hidden.");
+
+        // Show confirmation modal
+        document.getElementById('confirmationNumber').textContent = responseBody.confirmationNumber;
+        document.getElementById('emailAddress').textContent = formData.email;
+        $('#confirmationModal').modal('show');
+    } catch (error) {
+        console.error("Error during form submission:", error); // Log the error
+        document.getElementById('responseMessage').innerHTML = `<div class="alert alert-danger">Error: Could not submit form</div>`;
+    } finally {
+        // Re-enable form fields after submission
+        console.log("Re-enabling form fields and hiding spinner");
+        Array.from(form.elements).forEach(el => el.disabled = false);
+        submitSpinner.style.display = 'none'; // Ensure spinner is hidden in the finally block as well
+        document.getElementById('submissionOverlay').style.display = 'none';  // Ensure overlay is hidden
+    }
+});
+
+// Ensure that the spinner is hidden after the modal is closed
+$('#confirmationModal').on('hidden.bs.modal', function () {
+    document.getElementById('lostItemForm').reset(); // Reset the form
+    document.getElementById('itemValueContainer').style.display = 'none'; // Hide conditional fields
+    document.getElementById('emailError').style.display = 'none'; // Hide validation errors
+    document.getElementById('email').classList.remove('is-invalid'); // Remove invalid class
+    document.getElementById('submitSpinner').style.display = 'none'; // Ensure the spinner is hidden
+    document.getElementById('submissionOverlay').style.display = 'none';  // Hide the overlay in case it's still visible
+});
+
     let autocomplete;
 
     function initAutocomplete() {
