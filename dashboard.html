@@ -3,38 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Lost&Found Database</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <!-- jsPDF Library for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- AutoTable plugin for jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- SheetJS (xlsx) Library for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+        <!-- Include jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
+    <!-- Include jsPDF autoTable plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.18/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Include xlsx for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width:80%; /* Increase the width of the container to 90% of the screen width */
+            width: 80%; /* Ensure it takes the full width up to the max-width */
+            overflow-x: auto;
+        }
+
+        /* For larger screens, you can further increase the width */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 95%; /* Increase to 95% on large screens */
+            }
+        }
+
+
+        h2 {
+            color: #343a40;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+        }
+
+        #statusFilter,
+        #filterInput {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        table thead th {
+            background-color: #f8f9fa; 
+            color: #343a40;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        table thead th:last-child {
+            background-color: #f8f9fa; 
+            color: #343a40;
+            position: sticky;
+            right: 0;
+            z-index: 1;
+        }
+
+        .table tbody td:last-child {
+            position: sticky;
+            right: 0;
+            background-color: #ffffff;
+            z-index: 1;
+        }
+
+        table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        table tbody td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .pagination {
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #pageIndicator {
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            color: #343a40;
+        }
+
+        .btn {
+            display: block;
+            width: 100px;
+            margin: 30px auto 0;
+        }
+
+        /* Custom checkbox styling with cursor change */
+        input[type="checkbox"].shipping-status {
+            transform: scale(1.2);
+            cursor: pointer;  /* Change the cursor to pointer when hovering over the checkbox */
+        }
+
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 14px;
+            }
+
+            table th,
+            table td {
+                padding: 8px;
+            }
+        }
+
+        /* Make the filter, search, and sort row more compact */
+        .filter-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-row .form-group {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .filter-row .form-group:last-child {
+            margin-right: 0;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Welcome to the Dashboard</h2>
+    <div class="container">
+        <h2>Lost & Found Information</h2>
 
-        <!-- Search bar for filtering -->
-        <input type="text" id="filterInput" class="form-control" placeholder="Filter by Name or Email" />
+        <!-- Status Filter, Search, and Sorting in a single row -->
+        <div class="filter-row">
+            <!-- Status Filter for Shipping Completed/Not Completed -->
+            <div class="form-group">
+                <label for="statusFilter">Filter by Shipping Status:</label>
+                <select id="statusFilter" class="form-control">
+                    <option value="all">All</option>
+                    <option value="completed">Shipping Completed</option>
+                    <option value="pending">Shipping Pending</option>
+                </select>
+            </div>
+
+            <!-- Search bar for filtering -->
+            <div class="form-group">
+                <label for="filterInput">Search by Name or Phone:</label>
+                <input type="text" id="filterInput" class="form-control" placeholder="Enter Name or Phone">
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="form-group">
+                <label for="sortOptions">Sort By:</label>
+                <select id="sortOptions" class="form-control">
+                    <option value="default">Default</option>
+                    <option value="nameAsc">Name Ascending</option>
+                    <option value="nameDesc">Name Descending</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dateFilter">Filter by Date Range:</label>
+                <select id="dateFilter" class="form-control">
+                    <option value="all">All</option>
+                    <option value="1">Last 1 Month</option>
+                    <option value="3">Last 3 Months</option>
+                    <option value="6">Last 6 Months</option>
+                </select>
+            </div>   
+        </div>
 
         <!-- Table to display data -->
-        <table class="table table-bordered table-hover mt-3">
-            <thead>
-                <tr>
-                    <th onclick="sortTable('name')">Name</th>
-                    <th onclick="sortTable('email')">Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Item Description</th>
-                    <th>Shipping Method</th>
-                    <th>Pickup Location</th>
-                    <th>Inquiry ID</th>
-                    <th>Date of Loss</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <!-- Data will be dynamically inserted here -->
-            </tbody>
-        </table>
-        <div id="userData"></div>
+        <div class="table-responsive">
+            <table id="lostFoundTable" class="table table-bordered table-hover mt-3">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Item Description</th>
+                        <th>Shipping Method</th>
+                        <th>Pickup Location</th>
+                        <th>Inquiry ID</th>
+                        <th>Date of Loss</th>
+                        <th>Shipping Completed</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+
+                     
+
 
         <!-- Pagination controls -->
         <nav>
@@ -47,6 +247,7 @@
                 </li>
             </ul>
         </nav>
+        <div id="pageIndicator" style="text-align: center; margin-bottom: 10px;"></div>
 
         <button id="logout" class="btn btn-danger">Logout</button>
     </div>
