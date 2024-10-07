@@ -396,8 +396,16 @@
         document.getElementById('todaysDateHidden').value = today; // Set value in hidden field for submission
         const disclaimer = document.getElementById('disclaimer');
         disclaimer.style.display = 'none';
+        const loginButton = document.getElementById('loginButton');
+        
+        // Show the disclaimer on mouseover
         loginButton.addEventListener('mouseover', function() {
-        disclaimer.style.display = 'block';
+            disclaimer.style.display = 'block';  // Display disclaimer
+        });
+
+        // Hide the disclaimer on mouseout
+        loginButton.addEventListener('mouseout', function() {
+            disclaimer.style.display = 'none';  // Hide disclaimer
         });
         });
         // Tooltip initialization
