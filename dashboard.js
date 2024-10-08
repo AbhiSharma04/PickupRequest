@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Logout functionality
     document.getElementById('logout').addEventListener('click', function () {
         localStorage.clear();
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     });
 
     // Function to update page indicator

@@ -10,25 +10,9 @@
     <!-- AutoTable plugin for jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- SheetJS (xlsx) Library for Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-        <!-- Include jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-
-    <!-- Include jsPDF autoTable plugin -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.18/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Include xlsx for Excel export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-
-
 
     <!-- Custom Styles -->
     <style>
@@ -164,6 +148,15 @@
         .filter-row .form-group:last-child {
             margin-right: 0;
         }
+        table tbody td:nth-child(4) {
+            white-space: nowrap; /* Prevent wrapping */
+            min-width: 150px;     /* Set a minimum width to ensure it's wide enough */
+        }
+        table tbody td:nth-child(10) {
+            white-space: nowrap; /* Prevent wrapping */
+            min-width: 150px;     /* Set a minimum width to ensure it's wide enough */
+        }
+
     </style>
 </head>
 <body>
