@@ -264,6 +264,11 @@
                 <label for="zipCode">Zip Code:</label>
                 <input type="text" id="zipCode" name="zipCode" class="form-control" required>
             </div>
+            <!-- <div class="form-group col-md-4"></div>
+            <label for="country">Country:</label>
+            <input type="text" id="country" name="country" class="form-control" required>
+        </div> -->
+
         </div>
 
 
@@ -463,7 +468,7 @@ document.getElementById('lostItemForm').addEventListener('submit', async functio
     const state = document.getElementById('state').value || '';
     const zipCode = document.getElementById('zipCode').value || '';
 
-    const fullAddress = `${streetAddress}${aptNo ? ', Apt/Unit ' + aptNo : ''}, ${city}, ${state}, ${zipCode}`;
+    const fullAddress = `${streetAddress}${aptNo ? ',' + aptNo : ''}, ${city}, ${state}, ${zipCode}`;
 
     // Gather form data
     const formData = {
@@ -545,10 +550,11 @@ $('#confirmationModal').on('hidden.bs.modal', function () {
         const place = autocomplete.getPlace();
         let addressComponents = place.address_components;
 
-        let streetNumber = '', route = '', city = '', state = '', zipCode = '';
+        let streetNumber = '', route = '', city = '', state = '', zipCode = '',country='';
 
         addressComponents.forEach(component => {
             const types = component.types;
+            console.log(types);
             if (types.includes('street_number')) {
                 streetNumber = component.long_name;
             }
@@ -564,6 +570,9 @@ $('#confirmationModal').on('hidden.bs.modal', function () {
             if (types.includes('postal_code')) {
                 zipCode = component.long_name;
             }
+            if (types.includes('country')) {
+                country = component.long_name;
+            }
         });
 
         // Fill the form fields with the retrieved values
@@ -571,6 +580,7 @@ $('#confirmationModal').on('hidden.bs.modal', function () {
         document.getElementById('city').value = city;
         document.getElementById('state').value = state;
         document.getElementById('zipCode').value = zipCode;
+        //document.getElementById('country').value = country;
     }
 
     // Run the autocomplete initializer

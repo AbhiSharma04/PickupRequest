@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td>${item.shippingMethod || 'N/A'}</td>
                     <td>${item.pickupLocation || 'N/A'}</td>
                     <td>${item.inquiryID || 'N/A'}</td>
+                    <td>${item.confirmationNumber || 'N/A'}</td>
                     <td>${item.dateOfLoss || 'N/A'}</td>
                     <td><input type="checkbox" class="shipping-status" data-id="${item.confirmationNumber}" ${item.shippingCompleted ? 'checked' : ''}></td>
                 </tr>`;
