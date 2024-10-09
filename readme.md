@@ -45,7 +45,7 @@ The **Lost & Found Management System** is a comprehensive web-based application 
 
 3. Ensure your backend service (AWS Lambda or any other API) is correctly set up for managing the form submissions and dashboard functionalities.
 
-4. Configure your API endpoints in dashboard.js and script.js.
+4. Configure your API endpoints in dashboard.js, login.js and script.js.
 
 5. Create a DynamoDB table to store lost and found items. Make sure the partition key is confirmationNumber.
 
